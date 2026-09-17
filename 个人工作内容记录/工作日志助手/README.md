@@ -4,13 +4,39 @@
 
 ---
 
-## ⚡ 极速傻瓜式安装（3 种方式任意选）
+## ⚡ Ubuntu / Debian 云服务器【终极一行命令】（最推荐）
 
-无论你是完全不会代码的普通用户，还是开发者，按以下步骤**只需 1 分钟**即可跑起来！
+即使是一台刚开机的**全新、纯净的 Ubuntu / Debian 服务器**（没有 Docker、没有 Git），你只需直接**复制下面这一整条命令**粘贴到终端回车即可：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/WonderMaker123/workjilu/main/install.sh | bash
+```
+
+> **脚本全自动完成**：
+> 1. 自动安装系统基础组件（`curl`、`git` 等）
+> 2. 自动安装并配置 `Docker` 及 `Docker Compose` 环境
+> 3. 自动下载最新项目代码并构建启动
+> 4. 部署完成后，脚本会**自动获取你服务器的公网 IP 并打印访问网址**！
 
 ---
 
-### 🌟 方式一：Windows 用户【双击即开】（最省心、零敲命令）
+## 🚀 其它快速运行方式
+
+### 🐳 方式一：服务器已有 Docker（快速拉起）
+
+如果你的 Ubuntu / Debian 服务器已经装好了 Docker，直接执行这一行：
+
+```bash
+git clone https://github.com/WonderMaker123/workjilu.git && cd workjilu && docker compose up -d --build
+```
+
+- 启动后浏览器访问：`http://<你的服务器IP>`
+- 停止服务：`docker compose down`
+- 查看日志：`docker compose logs -f`
+
+---
+
+### 🌟 方式二：Windows 电脑小白【双击即开】（零敲命令）
 
 无需懂任何命令行，按如下步骤双击即可：
 
@@ -23,35 +49,16 @@
 
 ---
 
-### 🐳 方式二：终端一行命令傻瓜运行（Docker 模式）
-
-只要电脑装有 Docker，无论是在 Windows、Mac 还是云服务器，在终端直接**复制下面一整行命令**粘贴回车即可：
-
-#### 🖥️ Linux / macOS / 云服务器（复制一整行回车）：
-```bash
-git clone https://github.com/WonderMaker123/workjilu.git && cd workjilu && docker compose up -d --build
-```
-
-#### 🪟 Windows PowerShell（复制一整行回车）：
-```powershell
-git clone https://github.com/WonderMaker123/workjilu.git; cd workjilu; docker compose up -d --build
-```
-
-- 启动完成后，打开浏览器访问：**`http://localhost`**
-- 停止运行命令：`docker compose down`
-
----
-
 ### 💻 方式三：本地开发/源码极速启动（Node.js 模式）
 
-如果你需要直接在本地修改源码，只需执行：
+如果你需要直接在本地修改源码：
 
 ```bash
 # 1. 克隆并进入工程
 git clone https://github.com/WonderMaker123/workjilu.git
 cd workjilu/个人工作内容记录/工作日志助手
 
-# 2. 启动后端服务 (新开一个终端窗口)
+# 2. 启动后端服务 (终端 1)
 cd server
 cp .env.example .env
 npm install
@@ -59,18 +66,17 @@ npx prisma generate
 npx prisma migrate deploy
 npm run dev
 
-# 3. 启动前端服务 (新开一个终端窗口)
+# 3. 启动前端服务 (终端 2)
 cd ../web
 npm install
 npm run dev
 ```
 
-- 启动后浏览器访问：**`http://localhost:5173`**
-- 后端 API 端口：`http://localhost:3001`
+- 浏览器访问：**`http://localhost:5173`**
 
 ---
 
-## 🚀 首次使用指引（30秒上手）
+## 🎯 首次使用指引（30秒上手）
 
 1. **注册与登录**：
    - 打开系统后点击【注册】，输入任意账号密码即可创建你的私有账户（数据全部存储在本地）。
