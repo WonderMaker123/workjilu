@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  server:
+    build: ./个人工作内容记录/工作日志助手/server
+    container_name: worklog-server
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - JWT_SECRET=${JWT_SECRET:-worklog-secret-key-change-it-in-production}
+      - JWT_EXPIRES_IN=7d
+      - DATABASE_URL=file:/app/data/worklog.db
+    volumes:
+      - worklog-data:/app/data
+      - worklog-uploads:/app/uploads
+    expose:
+      - "3001"
+
+  web:
+    build: ./个人工作内容记录/工作日志助手/web
+    container_name: worklog-web
+    restart: unless-stopped
+    depends_on:
+      - server
+    environment:
+      - VITE_API_BASE=/api
+    ports:
+      - "80:80"
+
+volumes:
+  worklog-data:
+  worklog-uploads:
