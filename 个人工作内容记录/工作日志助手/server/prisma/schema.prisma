@@ -1,0 +1,69 @@
+// Prisma schema —— 工作日志助手
+// 数据库：SQLite（本地/单文件）；切换 PostgreSQL 时改 provider 与 url 即可
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 用户（多用户，数据按 user_id 隔离）
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  entries  Entry[]
+  reports  Report[]
+  aiConfig AiConfig?
+}
+
+// 每日记录
+model Entry {
+  id               Int      @id @default(autoincrement())
+  userId           Int
+  entryDate        DateTime // 所属日期（默认当天；SQLite 不支持 @db.Date，用 UTC 日期存储）
+  rawContent       String   // 原始内容（口语化）
+  polishedContent  String?  // AI 整理后的内容
+  polishedAt       DateTime?
+  tags             String   @default("[]") // JSON 数组字符串，如 ["项目A","日常"]
+  photos           String   @default("[]") // JSON 数组字符串，如 [{"id":"xxx.jpg","name":"现场.jpg"}]
+  wordCount        Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, entryDate])
+}
+
+// 月度报告
+model Report {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  yearMonth   String // "2026-08"
+  content     String // Markdown 内容
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, yearMonth])
+}
+
+// 用户 AI 配置
+model AiConfig {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  baseUrl   String // e.g. https://api.deepseek.com/v1
+  apiKey    String // 服务端加密存储，永不下发前端
+  model     String
+  formality String  @default("standard") // simple | standard | detailed
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

@@ -1,0 +1,32 @@
+# 依赖与临时产物
+node_modules
+dist
+.output
+*.log
+
+# 环境变量与敏感凭据（切勿提交！）
+.env
+.env.*
+!.env.production.example
+.deploy/worklog_deploy*
+id_rsa*
+*.pem
+*.key
+
+# 部署机密与临时配置
+.deploy/
+
+# 本地 SQLite 数据库文件
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# 系统与开发工具
+.DS_Store
+Thumbs.db
+*.code-workspace
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.kilo/

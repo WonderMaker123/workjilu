@@ -1,0 +1,32 @@
+# 生产部署 compose - 基于 Docker Hub 预构建镜像
+# 镜像仓库: Docker Hub (用户: your-dockerhub-username)
+# 用法: docker compose --env-file .env -f docker-compose.hub.yml pull
+#       docker compose --env-file .env -f docker-compose.hub.yml up -d
+services:
+  server:
+    image: ${DOCKER_IMAGE_SERVER:-worklog-server:latest}
+    container_name: worklog-server
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=7d
+      - DATABASE_URL=file:/app/data/worklog.db
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost}
+    volumes:
+      - worklog-data:/app/data
+      - worklog-uploads:/app/uploads
+
+  web:
+    image: ${DOCKER_IMAGE_WEB:-worklog-web:latest}
+    container_name: worklog-web
+    restart: unless-stopped
+    depends_on:
+      - server
+    ports:
+      - "127.0.0.1:18081:80"
+
+volumes:
+  worklog-data:
+  worklog-uploads:

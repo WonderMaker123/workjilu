@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>今日记录 · 工作日志助手 原型</title>
+<style>
+/* ===== Design Token（海螺UI规范 白色 v1）===== */
+:root{
+  --primary:#0A5CFF;
+  --primary-light:#488BFF;
+  --success:#00A870;
+  --danger:#E34D59;
+  --warning:#ED7B2F;
+  --text-main:#222222;
+  --text-title:#333333;
+  --text-sub:#666666;
+  --text-placeholder:#999999;
+  --divider:#DDDDDD;
+  --bg-page:#F5F5F5;
+  --bg-card:#FFFFFF;
+  --bg-disabled:#CCCCCC;
+  --bg-selected:#959595;
+
+  --radius-sm:4px;
+  --radius-lg:6px;
+  --panel-pad:24px;
+  --space-md:16px;
+  --titlebar:64px;
+  --font:"Microsoft YaHei","微软雅黑",Arial,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;}
+body{font-family:var(--font);font-size:14px;line-height:22px;color:var(--text-title);background:var(--bg-page);}
+
+/* ===== 顶部 Tab 页签区（参照业务系统框架）===== */
+.topbar{
+  height:56px;background:var(--bg-card);border-bottom:1px solid var(--divider);
+  display:flex;align-items:center;padding:0 24px;position:relative;z-index:20;
+}
+.brand{display:flex;align-items:center;gap:10px;margin-right:32px;}
+.brand-icon{width:28px;height:28px;border-radius:6px;background:var(--primary);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;}
+.brand-name{font-size:18px;font-weight:600;color:var(--text-main);}
+.tabs{display:flex;height:100%;align-items:stretch;}
+.tab{padding:0 20px;display:flex;align-items:center;font-size:16px;color:var(--text-sub);cursor:pointer;border-bottom:2px solid transparent;gap:6px;}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600;}
+.tab .icon{font-size:18px;line-height:1;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:16px;}
+.user{display:flex;align-items:center;gap:8px;color:var(--text-sub);cursor:pointer;}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--primary-light);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;}
+
+/* ===== 主体：左导航 + 内容 ===== */
+.main{display:flex;height:calc(100vh - 56px);overflow:hidden;}
+.nav{width:216px;background:var(--bg-card);border-right:1px solid var(--divider);padding-top:12px;display:flex;flex-direction:column;}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 24px;color:var(--text-title);cursor:pointer;font-size:16px;border-left:3px solid transparent;}
+.nav-item .icon{width:18px;height:18px;display:flex;align-items:center;justify-content:center;color:var(--text-sub);}
+.nav-item:hover{color:var(--primary);}
+.nav-item:hover .icon{color:var(--primary);}
+.nav-item.active{background:#F0F5FF;color:var(--primary);border-left-color:var(--primary);font-weight:600;}
+.nav-item.active .icon{color:var(--primary);}
+
+.content{flex:1;overflow-y:auto;padding:var(--panel-pad);}
+
+/* ===== 模块标题栏 64px ===== */
+.page-head{height:64px;display:flex;align-items:center;gap:12px;
+  /* 边框预留，模拟标题栏与内容区分 */
+}
+.page-title{font-size:22px;line-height:30px;font-weight:600;color:var(--text-main);}
+.page-sub{font-size:12px;color:var(--text-sub);}
+
+/* ===== 卡片面板 ===== */
+.panel{background:var(--bg-card);border:1px solid var(--divider);border-radius:var(--radius-sm);padding:var(--panel-pad);}
+.panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-md);}
+.panel-title{font-size:18px;line-height:26px;color:var(--text-main);font-weight:600;}
+.panel-hint{font-size:12px;color:var(--text-sub);}
+
+/* ===== 两栏布局 ===== */
+.grid-2{display:grid;grid-template-columns:1.3fr 1fr;gap:24px;align-items:start;}
+
+/* ===== 输入区 ===== */
+.field{margin-bottom:var(--space-md);}
+.label{font-size:14px;line-height:22px;color:var(--text-title);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.label .req{color:var(--danger);}
+textarea.input, input.input{
+  width:100%;border:1px solid var(--divider);border-radius:var(--radius-sm);
+  font-family:var(--font);font-size:14px;line-height:22px;color:var(--text-title);padding:10px 12px;resize:vertical;background:var(--bg-card);
+}
+textarea.input::placeholder, input.input::placeholder{color:var(--text-placeholder);}
+textarea.input:focus, input.input:focus{outline:none;border-color:var(--primary);}
+textarea{min-height:150px;}
+.hint{font-size:12px;color:var(--text-sub);margin-top:6px;}
+
+.form-actions{display:flex;align-items:center;gap:12px;margin-top:6px;}
+
+/* ===== 按钮 ===== */
+.btn{height:36px;padding:0 16px;border-radius:var(--radius-sm);font-family:var(--font);
+  font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:10px;border:1px solid transparent;transition:.15s;}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-primary:hover{background:#004ce0;}
+.btn-primary:active{background:var(--primary);box-shadow:inset 0 0 0 2px #003dbb;}
+.btn-ghost{background:var(--bg-card);border-color:var(--divider);color:var(--text-title);}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary);}
+.btn-icon{height:32px;width:32px;padding:0;border-radius:var(--radius-sm);background:var(--bg-card);border:1px solid var(--divider);color:var(--text-sub);cursor:pointer;}
+.btn-icon:hover{border-color:var(--primary);color:var(--primary);}
+.btn-sm{height:32px;padding:0 16px;}
+
+/* AI 整理按钮 带图标 */
+.ai-btn{height:36px;padding:0 16px;border-radius:var(--radius-sm);background:linear-gradient(135deg,#0A5CFF,#488BFF);color:#fff;border:none;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;gap:8px;}
+.ai-btn .spark{font-size:16px;}
+
+/* ===== 记录列表 ===== */
+.timeline{display:flex;flex-direction:column;}
+.day-group{display:grid;grid-template-columns:96px 1fr;gap:16px;padding:10px 0;border-bottom:1px solid var(--divider);}
+.day-group:last-child{border-bottom:none;}
+.day-label{text-align:right;}
+.day-date{font-size:16px;line-height:24px;color:var(--text-main);font-weight:600;}
+.day-week{font-size:12px;color:var(--text-sub);}
+.day-entries{display:flex;flex-direction:column;}
+.entry{display:flex;gap:10px;padding:4px 0;color:var(--text-title);}
+.entry .bullet{width:6px;height:6px;border-radius:50%;background:var(--primary);margin-top:8px;flex-shrink:0;}
+.entry.done .bullet{background:var(--success);}
+.entry .txt{flex:1;line-height:22px;}
+.entry .meta{font-size:12px;color:var(--text-placeholder);white-space:nowrap;margin-top:2px;}
+.entry-tag{font-size:12px;color:var(--primary);background:#F0F5FF;border-radius:var(--radius-sm);padding:0 8px;line-height:20px;align-self:flex-start;margin-top:2px;}
+
+/* ===== 移动端 ===== */
+@media(max-width:800px){
+  .nav{display:none;}
+  .grid-2{grid-template-columns:1fr;}
+  .tabs .tab{padding:0 12px;}
+  .brand-name{display:none;}
+  .day-group{grid-template-columns:1fr;row-gap:4px;}
+  .day-label{text-align:left;}
+}
+</style>
+</head>
+<body>
+
+<!-- 顶部 Tab 页签 -->
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-icon">记</div>
+    <div class="brand-name">工作日志</div>
+  </div>
+  <nav class="tabs">
+    <div class="tab active"><span class="icon">▦</span> 记录</div>
+    <div class="tab"><span class="icon">▤</span> 月报</div>
+    <div class="tab"><span class="icon">⚙</span> 设置</div>
+  </nav>
+  <div class="topbar-right">
+    <div class="user"><div class="avatar">我</div> 我</div>
+  </div>
+</header>
+
+<div class="main">
+  <!-- 左侧导航 -->
+  <aside class="nav">
+    <div class="nav-item active"><span class="icon">▶</span> 今日记录</div>
+    <div class="nav-item"><span class="icon">≡</span> 记录列表</div>
+    <div class="nav-item"><span class="icon">▤</span> 月度汇总</div>
+    <div class="nav-item"><span class="icon">⚙</span> AI 设置</div>
+  </aside>
+
+  <!-- 内容区 -->
+  <main class="content">
+    <div class="page-head">
+      <div>
+        <div class="page-title">今日记录</div>
+        <div class="page-sub">2026 年 9 月 11 日 · 星期五 · 随手记下今天做了什么，AI 帮你整理</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- 左：今日记录编辑 -->
+      <section class="panel">
+        <div class="panel-head">
+          <div class="panel-title">今日做了什么？</div>
+          <div class="panel-hint">支持口语化描述</div>
+        </div>
+
+        <div class="field">
+          <div class="label">记录内容 <span class="req">*</span></div>
+          <textarea class="input" placeholder="例：上午处理了客户A的报价单，下午开了项目周会，顺便改了首页的Banner……"></textarea>
+          <div class="hint">写清楚「做了什么 · 结果如何」，AI 整理时会帮你更规范。</div>
+        </div>
+
+        <div class="form-actions">
+          <button class="ai-btn"><span class="spark">✦</span> AI 整理</button>
+          <button class="btn btn-primary">保存</button>
+          <button class="btn btn-ghost">清空</button>
+        </div>
+      </section>
+
+      <!-- 右：最近记录 -->
+      <section class="panel">
+        <div class="panel-head">
+          <div class="panel-title">最近记录</div>
+          <a style="font-size:14px;color:var(--primary);text-decoration:none;">查看全部 →</a>
+        </div>
+
+        <div class="timeline">
+          <div class="day-group">
+            <div class="day-label"><div class="day-date">9/11</div><div class="day-week">周五</div></div>
+            <div class="day-entries">
+              <div class="entry"><span class="bullet"></span><span class="txt">跟进客户 B 合同回签，确认周五前寄回</span></div>
+              <div class="entry done"><span class="bullet"></span><span class="txt">完成数据看板需求梳理<span class="entry-tag">已整理</span></span></div>
+            </div>
+          </div>
+          <div class="day-group">
+            <div class="day-label"><div class="day-date">9/10</div><div class="day-week">周四</div></div>
+            <div class="day-entries">
+              <div class="entry"><span class="bullet"></span><span class="txt">处理市场部物料申请，输出排期表</span></div>
+            </div>
+          </div>
+          <div class="day-group">
+            <div class="day-label"><div class="day-date">9/09</div><div class="day-week">周三</div></div>
+            <div class="day-entries">
+              <div class="entry"><span class="bullet"></span><span class="txt">参加产品评审会，记录 6 项待办</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,33 @@
+# 生产部署 compose
+# 80/443 可由宿主机反代 nginx 统一处理，也可以根据需要映射端口
+# 用法：docker compose --env-file .env -f docker-compose.prod.yml up -d --build
+services:
+  server:
+    build: ./server
+    container_name: worklog-server
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=7d
+      - DATABASE_URL=file:/app/data/worklog.db
+      # 同源访问为主；额外放行域名的跨域
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost}
+    volumes:
+      - worklog-data:/app/data
+      - worklog-uploads:/app/uploads
+
+  web:
+    build: ./web
+    container_name: worklog-web
+    restart: unless-stopped
+    depends_on:
+      - server
+    ports:
+      # 默认监听本机 18081，可根据需要调整或由上层反代接入
+      - "127.0.0.1:18081:80"
+
+volumes:
+  worklog-data:
+  worklog-uploads:

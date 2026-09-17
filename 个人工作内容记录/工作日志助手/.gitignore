@@ -1,0 +1,8 @@
+node_modules
+dist
+.env
+*.db
+*.db-journal
+*.code-workspace
+.DS_Store
+.deploy/

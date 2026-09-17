@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  server:
+    build: ./server
+    container_name: worklog-server
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      # 生产环境务必修改为随机长字符串
+      - JWT_SECRET=${JWT_SECRET:-please-change-me-in-production}
+      - JWT_EXPIRES_IN=7d
+      - DATABASE_URL=file:/app/data/worklog.db
+    volumes:
+      - worklog-data:/app/data
+      - worklog-uploads:/app/uploads
+    expose:
+      - "3001"
+
+  web:
+    build: ./web
+    container_name: worklog-web
+    restart: unless-stopped
+    depends_on:
+      - server
+    environment:
+      - VITE_API_BASE=/api
+    ports:
+      - "80:80"
+      # - "443:443"   # 若启用 HTTPS 请自行配置
+
+volumes:
+  worklog-data:
+  worklog-uploads:

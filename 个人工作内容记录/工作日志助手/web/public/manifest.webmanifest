@@ -1,0 +1,20 @@
+{
+  "name": "工作日志助手",
+  "short_name": "工作日志",
+  "description": "卡调事业部运维实施组工作记录工具：随手记录实施/巡检/故障工作，AI 整理并生成周报月报",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAFAF9",
+  "theme_color": "#4F46E5",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
