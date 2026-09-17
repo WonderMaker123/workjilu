@@ -1,58 +1,146 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# 工作日志助手 (WorkLog Assistant) - Ubuntu / Debian 一键傻瓜式全自动安装脚本
+# 工作日志助手 (WorkLog Assistant) - Ubuntu / Debian 一键全自动交互式安装脚本
 # 支持系统: Ubuntu 20.04+, Debian 11+
 # ==============================================================================
 
 set -e
 
-# 颜色输出
+# 颜色定义
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-echo -e "${BLUE}======================================================${NC}"
-echo -e "${GREEN}       工作日志助手 - Ubuntu / Debian 一键全自动部署${NC}"
-echo -e "${BLUE}======================================================${NC}"
+echo -e "${BLUE}================================================================${NC}"
+echo -e "${GREEN}          工作日志助手 (WorkLog) - 一键全自动交互式安装${NC}"
+echo -e "${BLUE}================================================================${NC}"
+echo ""
 
 # 1. 权限检查
 if [ "$(id -u)" -ne 0 ]; then
-    echo -e "${YELLOW}[提示] 当前非 root 用户，尝试获取 sudo 权限...${NC}"
+    echo -e "${YELLOW}[提示] 当前非 root 用户，将自动调用 sudo 执行命令...${NC}"
     SUDO="sudo"
 else
     SUDO=""
 fi
 
-# 2. 检查并安装基础组件 (curl, git)
-echo -e "${BLUE}[1/4] 检查系统基础依赖 (curl, git)...${NC}"
-$SUDO apt-get update -y
-$SUDO apt-get install -y curl git ca-certificates
+# 2. 读取终端输入的辅助函数（保证 curl | bash 管道模式下能正常交互）
+read_input() {
+    local prompt="$1"
+    local default_val="$2"
+    local result=""
+    if [ -t 0 ]; then
+        read -r -p "$prompt" result
+    elif [ -e /dev/tty ]; then
+        read -r -p "$prompt" result </dev/tty
+    else
+        result=""
+    fi
+    if [ -z "$result" ]; then
+        echo "$default_val"
+    else
+        echo "$result"
+    fi
+}
 
-# 3. 检查并安装 Docker & Docker Compose
-echo -e "${BLUE}[2/4] 检查 Docker 环境...${NC}"
+echo -e "${CYAN}>>> 请进行简单的安装配置（直接按回车将使用默认推荐值）：${NC}"
+echo ""
+
+# 询问安装目录
+DEFAULT_DIR="/opt/worklog"
+echo -e "📁 ${YELLOW}1. 项目存放目录${NC}"
+USER_DIR=$(read_input "   请输入安装文件夹路径 [默认: ${DEFAULT_DIR}]: " "${DEFAULT_DIR}")
+INSTALL_DIR=$(eval echo "$USER_DIR")
+echo -e "   -> 安装目录设为: ${GREEN}${INSTALL_DIR}${NC}\n"
+
+# 检查端口占用的辅助函数
+check_port_in_use() {
+    local port="$1"
+    if command -v ss &>/dev/null; then
+        ss -tuln | grep -q ":${port}\b"
+    elif command -v netstat &>/dev/null; then
+        netstat -tuln | grep -q ":${port}\b"
+    elif command -v lsof &>/dev/null; then
+        lsof -i ":${port}" &>/dev/null
+    else
+        return 1
+    fi
+}
+
+# 询问 Web 访问端口
+DEFAULT_PORT=80
+if check_port_in_use 80; then
+    DEFAULT_PORT=8080
+    echo -e "🌐 ${YELLOW}2. Web 访问端口 (检测到默认 80 端口已被占用，为您推荐 8080)${NC}"
+else
+    echo -e "🌐 ${YELLOW}2. Web 访问端口${NC}"
+fi
+
+while true; do
+    USER_PORT=$(read_input "   请输入 Web 访问端口 [默认: ${DEFAULT_PORT}]: " "${DEFAULT_PORT}")
+    
+    # 验证是否为合法纯数字
+    if ! [[ "$USER_PORT" =~ ^[0-9]+$ ]] || [ "$USER_PORT" -lt 1 ] || [ "$USER_PORT" -gt 65535 ]; then
+        echo -e "   ${RED}[错误] 端口号必须是 1 到 65535 之间的整数，请重新输入！${NC}"
+        continue
+    fi
+    
+    # 检查输入端口是否被占用
+    if check_port_in_use "$USER_PORT"; then
+        echo -e "   ${YELLOW}[警告] 端口 ${USER_PORT} 当前已被其他进程占用！${NC}"
+        OVERWRITE=$(read_input "   是否仍要强制使用此端口？(y/N): " "N")
+        if [[ "$OVERWRITE" =~ ^[Yy]$ ]]; then
+            TARGET_PORT="$USER_PORT"
+            break
+        else
+            continue
+        fi
+    else
+        TARGET_PORT="$USER_PORT"
+        break
+    fi
+done
+
+echo -e "   -> 访问端口设为: ${GREEN}${TARGET_PORT}${NC}\n"
+
+echo -e "${BLUE}----------------------------------------------------------------${NC}"
+echo -e "确认安装参数："
+echo -e "  • 安装路径: ${GREEN}${INSTALL_DIR}${NC}"
+echo -e "  • 访问端口: ${GREEN}${TARGET_PORT}${NC}"
+echo -e "${BLUE}----------------------------------------------------------------${NC}"
+echo ""
+
+# 3. 基础依赖检查
+echo -e "${BLUE}[1/4] 检查系统基础依赖 (curl, git, openssl)...${NC}"
+$SUDO apt-get update -y
+$SUDO apt-get install -y curl git ca-certificates openssl
+
+# 4. 检查并安装 Docker & Docker Compose
+echo -e "${BLUE}[2/4] 检查 Docker 与 Compose 环境...${NC}"
 if ! command -v docker &> /dev/null; then
-    echo -e "${YELLOW}未检测到 Docker，正在为您全自动安装 Docker 环境（请稍候）...${NC}"
+    echo -e "${YELLOW}未检测到 Docker，正在全自动安装 Docker 环境，请稍候...${NC}"
     curl -fsSL https://get.docker.com | $SUDO sh
     $SUDO systemctl enable docker
     $SUDO systemctl start docker
 else
-    echo -e "${GREEN}Docker 已安装，跳过安装步骤。${NC}"
+    echo -e "${GREEN}Docker 环境就绪。${NC}"
 fi
 
-# 确保 docker compose 可用
+# 确保 docker-compose-plugin 就绪
 if ! docker compose version &> /dev/null; then
-    echo -e "${YELLOW}正在安装 docker-compose-plugin...${NC}"
+    echo -e "${YELLOW}正在补充安装 docker-compose-plugin...${NC}"
     $SUDO apt-get install -y docker-compose-plugin || true
 fi
 
-# 4. 拉取仓库代码
-INSTALL_DIR="/opt/worklog"
+# 5. 拉取项目源码
 echo -e "${BLUE}[3/4] 正在拉取项目代码至 ${INSTALL_DIR}...${NC}"
+$SUDO mkdir -p "$INSTALL_DIR"
 
-if [ -d "$INSTALL_DIR" ]; then
-    echo -e "${YELLOW}检测到已存在安装目录，正在更新最新代码...${NC}"
+if [ -d "$INSTALL_DIR/.git" ]; then
+    echo -e "${YELLOW}检测到已存在 Git 仓库，正在更新最新代码...${NC}"
     cd "$INSTALL_DIR"
     $SUDO git pull || true
 else
@@ -60,23 +148,45 @@ else
     cd "$INSTALL_DIR"
 fi
 
-# 5. 构建并启动容器
-echo -e "${BLUE}[4/4] 正在构建并拉起 Docker 容器（首次构建需要 1-2 分钟，请稍候）...${NC}"
+# 6. 配置环境变量 (.env)
+echo -e "${BLUE}[4/4] 正在生成运行配置并构建容器...${NC}"
+
+# 生成安全随机 JWT 密钥
+RANDOM_SECRET=$(openssl rand -hex 16 2>/dev/null || date +%s%N | md5sum | head -c 32)
+
+$SUDO tee "$INSTALL_DIR/.env" > /dev/null <<EOF
+WEB_PORT=${TARGET_PORT}
+JWT_SECRET=${RANDOM_SECRET}
+EOF
+
+# 7. 启动容器
 $SUDO docker compose up -d --build
 
-# 获取服务器公网 IP
-SERVER_IP=$(curl -s4 https://api.ipify.org || curl -s4 https://ifconfig.me || echo "你的服务器IP")
+# 8. 获取服务器公网 IP
+SERVER_IP=$(curl -s4 https://api.ipify.org || curl -s4 https://ifconfig.me || echo "<服务器公网IP>")
+
+if [ "$TARGET_PORT" = "80" ]; then
+    ACCESS_URL="http://${SERVER_IP}"
+    LOCAL_URL="http://localhost"
+else
+    ACCESS_URL="http://${SERVER_IP}:${TARGET_PORT}"
+    LOCAL_URL="http://localhost:${TARGET_PORT}"
+fi
 
 echo ""
-echo -e "${GREEN}======================================================${NC}"
-echo -e "${GREEN}🎉 恭喜！工作日志助手已成功部署并运行！${NC}"
-echo -e "${GREEN}======================================================${NC}"
-echo -e "👉 浏览器直接访问: ${YELLOW}http://${SERVER_IP}${NC}"
-echo -e "👉 本地局域网/本机访问: ${YELLOW}http://localhost${NC}"
+echo -e "${GREEN}================================================================${NC}"
+echo -e "${GREEN}🎉 恭喜！工作日志助手已成功安装并启动！${NC}"
+echo -e "${GREEN}================================================================${NC}"
 echo ""
-echo -e "${BLUE}常用管理命令（在 ${INSTALL_DIR} 目录下执行）：${NC}"
-echo -e "  查看运行状态: ${YELLOW}docker compose ps${NC}"
-echo -e "  查看后台日志: ${YELLOW}docker compose logs -f${NC}"
-echo -e "  停止服务:     ${YELLOW}docker compose down${NC}"
-echo -e "  重启服务:     ${YELLOW}docker compose restart${NC}"
-echo -e "${GREEN}======================================================${NC}"
+echo -e "👉 浏览器公网访问: ${CYAN}${ACCESS_URL}${NC}"
+echo -e "👉 本机/内网访问:   ${CYAN}${LOCAL_URL}${NC}"
+echo ""
+echo -e "${YELLOW}💡 提示：若外网无法访问，请检查云服务器安全组/防火墙是否已放行 ${TARGET_PORT} 端口！${NC}"
+echo -e "   Ubuntu 防火墙放行命令: ${GREEN}sudo ufw allow ${TARGET_PORT}/tcp${NC}"
+echo ""
+echo -e "${BLUE}常用运维命令（在 ${INSTALL_DIR} 目录下执行）：${NC}"
+echo -e "  查看运行状态:   ${YELLOW}docker compose ps${NC}"
+echo -e "  查看实时日志:   ${YELLOW}docker compose logs -f${NC}"
+echo -e "  停止服务:       ${YELLOW}docker compose down${NC}"
+echo -e "  重启服务:       ${YELLOW}docker compose restart${NC}"
+echo -e "${GREEN}================================================================${NC}"

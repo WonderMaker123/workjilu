@@ -4,33 +4,29 @@
 
 ---
 
-## ⚡ Ubuntu / Debian 云服务器【终极一行命令】（最推荐）
+## ⚡ Ubuntu / Debian 云服务器【一键交互式安装】（最推荐）
 
-即使是一台刚开机的**全新、纯净的 Ubuntu / Debian 服务器**（没有 Docker、没有 Git），你只需直接**复制下面这一整条命令**粘贴到终端回车即可：
+即使是一台刚开机的**全新、纯净的 Ubuntu / Debian 服务器**（没有 Docker、没有 Git），你只需直接**复制下面这行命令**粘贴到终端回车即可：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/WonderMaker123/workjilu/main/install.sh | bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/WonderMaker123/workjilu/main/install.sh)"
 ```
 
-> **脚本全自动完成**：
-> 1. 自动安装系统基础组件（`curl`、`git` 等）
-> 2. 自动安装并配置 `Docker` 及 `Docker Compose` 环境
-> 3. 自动下载最新项目代码并构建启动
-> 4. 部署完成后，脚本会**自动获取你服务器的公网 IP 并打印访问网址**！
+### ✨ 安装过程全交互（可自定义目录与端口）：
+1. 📁 **自定义存放文件夹**：提示输入安装目录（如 `/opt/worklog`、`/home/ubuntu/worklog`、`/data/worklog`），**直接按回车默认装在 `/opt/worklog`**。
+2. 🌐 **自定义 Web 端口**：支持输入你喜欢的访问端口（如 `80`、`8080`、`8888`、`3000`）。脚本会**自动检测端口占用**，如果 80 端口已被占用（比如装了 Nginx/宝塔），会自动提醒并智能推荐其他可用端口！
+3. 🐳 **全自动环境安装**：全自动检测并安装 `Docker`、`Compose`、`Git` 等必要依赖。
+4. 🚀 **自动启动并输出外网访问网址**：部署完成后自动打印服务器公网访问地址（如 `http://你的IP:8080`），并提示防火墙放行方法。
 
 ---
 
-## 🚀 其它快速运行方式
+## 🚀 其它快捷运行方式
 
-### 🐳 方式一：服务器已有 Docker（快速拉起）
-
-如果你的 Ubuntu / Debian 服务器已经装好了 Docker，直接执行这一行：
-
+### 🐳 方式一：服务器已有 Docker 且想直接跑
 ```bash
 git clone https://github.com/WonderMaker123/workjilu.git && cd workjilu && docker compose up -d --build
 ```
-
-- 启动后浏览器访问：`http://<你的服务器IP>`
+- 默认端口：`80`（如需改端口，在目录里新建 `.env` 写入 `WEB_PORT=8080` 即可）
 - 停止服务：`docker compose down`
 - 查看日志：`docker compose logs -f`
 
