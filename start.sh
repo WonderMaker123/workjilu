@@ -11,8 +11,13 @@ if ! command -v docker &> /dev/null; then
     exit 1
 fi
 
-echo "正在启动容器（首次启动将自动构建）..."
-docker compose up -d --build
+echo "正在拉取镜像并启动容器..."
+if docker compose pull; then
+    docker compose up -d
+else
+    echo "拉取预构建镜像失败，降级使用本地构建..."
+    docker compose up -d --build
+fi
 
 echo ""
 echo "启动完成！请在浏览器访问: http://localhost:5080"

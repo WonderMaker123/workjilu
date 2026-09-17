@@ -181,8 +181,15 @@ WEB_PORT=${TARGET_PORT}
 JWT_SECRET=${RANDOM_SECRET}
 EOF
 
-# 7. 启动容器
-$SUDO docker compose up -d --build
+# 7. 拉取镜像并启动容器
+echo -e "${YELLOW}正在拉取 Docker Hub 预构建镜像并启动（无需本地漫长编译）...${NC}"
+if $SUDO docker compose pull; then
+    echo -e "${GREEN}镜像拉取成功，正在启动服务...${NC}"
+    $SUDO docker compose up -d
+else
+    echo -e "${YELLOW}未能直接拉取预构建镜像，降级为本地实时构建启动...${NC}"
+    $SUDO docker compose up -d --build
+fi
 
 # 8. 获取服务器公网 IP
 SERVER_IP=$(curl -s4 https://api.ipify.org || curl -s4 https://ifconfig.me || echo "<服务器公网IP>")

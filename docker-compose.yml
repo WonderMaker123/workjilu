@@ -2,7 +2,10 @@ version: "3.8"
 
 services:
   server:
-    build: ./个人工作内容记录/工作日志助手/server
+    image: ${DOCKER_IMAGE_SERVER:-wndfl/worklog-server:latest}
+    build:
+      context: ./个人工作内容记录/工作日志助手/server
+      dockerfile: Dockerfile
     container_name: worklog-server
     restart: unless-stopped
     environment:
@@ -18,7 +21,10 @@ services:
       - "3001"
 
   web:
-    build: ./个人工作内容记录/工作日志助手/web
+    image: ${DOCKER_IMAGE_WEB:-wndfl/worklog-web:latest}
+    build:
+      context: ./个人工作内容记录/工作日志助手/web
+      dockerfile: Dockerfile
     container_name: worklog-web
     restart: unless-stopped
     depends_on:

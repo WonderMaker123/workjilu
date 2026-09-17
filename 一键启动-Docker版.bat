@@ -16,8 +16,14 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-echo [1/2] 正在构建并拉起容器（首次启动需要下载基础镜像，请稍候）...
-docker compose up -d --build
+echo [1/2] 正在拉取 Docker Hub 预构建镜像并启动...
+docker compose pull
+if %errorlevel% equ 0 (
+    docker compose up -d
+) else (
+    echo [提示] 预构建镜像拉取失败，尝试本地构建启动...
+    docker compose up -d --build
+)
 
 if %errorlevel% neq 0 (
     echo.

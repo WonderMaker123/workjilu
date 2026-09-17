@@ -100,6 +100,19 @@ npm run dev
 
 ---
 
+## 🚀 持续集成与 Docker Hub 镜像构建 (CI/CD)
+
+本项目配置了 **GitHub Actions** 自动化 CI/CD 流水线（`.github/workflows/docker-publish.yml`）：
+- **自动构建**：每次向 `main` 分支提交代码或打版本标签（Tag `v*.*.*`）时，GitHub 自动云端构建前端与后端多架构 Docker 镜像（支持 `linux/amd64` 与 `linux/arm64`），并自动推送到 Docker Hub。
+- **免本地编译**：用户端安装时直接拉取 Docker Hub 预构建镜像（`wndfl/worklog-server` 和 `wndfl/worklog-web`），数秒内即可拉起运行，无需在用户服务器或电脑上安装 Node.js/依赖编译。
+- **手动触发**：在 GitHub 仓库的 **Actions** 页面，找到 `Build and Push Docker Images to Docker Hub`，可点击 **Run workflow** 手动随时触发云端打包发布。
+
+> 💡 **首次配置提醒**：请在 GitHub 仓库的 `Settings -> Secrets and variables -> Actions` 中配置以下 Repository secrets：
+> 1. `DOCKERHUB_USERNAME`: 你的 Docker Hub 用户名（如 `wndfl`）
+> 2. `DOCKERHUB_TOKEN`: 你的 Docker Hub Access Token（在 Docker Hub 账号设置 -> Personal access tokens 中生成）
+
+---
+
 ## 📄 开源许可证
 
 本项目基于 [Apache 2.0 License](LICENSE) 开源协议。

@@ -2,7 +2,10 @@ version: "3.8"
 
 services:
   server:
-    build: ./server
+    image: ${DOCKER_IMAGE_SERVER:-wndfl/worklog-server:latest}
+    build:
+      context: ./server
+      dockerfile: Dockerfile
     container_name: worklog-server
     restart: unless-stopped
     environment:
@@ -19,7 +22,10 @@ services:
       - "3001"
 
   web:
-    build: ./web
+    image: ${DOCKER_IMAGE_WEB:-wndfl/worklog-web:latest}
+    build:
+      context: ./web
+      dockerfile: Dockerfile
     container_name: worklog-web
     restart: unless-stopped
     depends_on:
