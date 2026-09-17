@@ -27,7 +27,7 @@ services:
     environment:
       - VITE_API_BASE=/api
     ports:
-      - "80:80"
+      - "${WEB_PORT:-5080}:80"
       # - "443:443"   # 若启用 HTTPS 请自行配置
 
 volumes:

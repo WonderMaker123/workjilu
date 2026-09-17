@@ -15,4 +15,4 @@ echo "正在启动容器（首次启动将自动构建）..."
 docker compose up -d --build
 
 echo ""
-echo "启动完成！请在浏览器访问: http://localhost"
+echo "启动完成！请在浏览器访问: http://localhost:5080"

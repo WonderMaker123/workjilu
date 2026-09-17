@@ -29,10 +29,10 @@ if %errorlevel% neq 0 (
 
 echo.
 echo [2/2] 服务启动成功！
-echo 前端访问地址: http://localhost
+echo 前端访问地址: http://localhost:5080
 echo.
 echo 正在为您自动打开浏览器...
-start http://localhost
+start http://localhost:5080
 
 echo.
 echo 提示：如需停止运行，请双击打开同目录下的 "停止运行.bat" 或输入 docker compose down

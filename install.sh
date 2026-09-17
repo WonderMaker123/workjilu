@@ -71,10 +71,10 @@ check_port_in_use() {
 }
 
 # 询问 Web 访问端口
-DEFAULT_PORT=80
-if check_port_in_use 80; then
-    DEFAULT_PORT=8080
-    echo -e "🌐 ${YELLOW}2. Web 访问端口 (检测到默认 80 端口已被占用，为您推荐 8080)${NC}"
+DEFAULT_PORT=5080
+if check_port_in_use 5080; then
+    DEFAULT_PORT=15080
+    echo -e "🌐 ${YELLOW}2. Web 访问端口 (检测到默认 5080 端口已被占用，为您推荐 15080)${NC}"
 else
     echo -e "🌐 ${YELLOW}2. Web 访问端口${NC}"
 fi

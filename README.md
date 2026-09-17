@@ -14,9 +14,9 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/WonderMaker123/workjilu/
 
 ### ✨ 安装过程全交互（可自定义目录与端口）：
 1. 📁 **自定义存放文件夹**：提示输入安装目录（如 `/opt/worklog`、`/home/ubuntu/worklog`、`/data/worklog`），**直接按回车默认装在 `/opt/worklog`**。
-2. 🌐 **自定义 Web 端口**：支持输入你喜欢的访问端口（如 `80`、`8080`、`8888`、`3000`）。脚本会**自动检测端口占用**，如果 80 端口已被占用（比如装了 Nginx/宝塔），会自动提醒并智能推荐其他可用端口！
+2. 🌐 **自定义 Web 端口**：支持输入你喜欢的访问端口（**回车默认使用 `5080`**）。脚本会**自动检测端口占用**，如果 5080 端口已被占用，会自动提醒并推荐 `15080` 等可用端口！
 3. 🐳 **全自动环境安装**：全自动检测并安装 `Docker`、`Compose`、`Git` 等必要依赖。
-4. 🚀 **自动启动并输出外网访问网址**：部署完成后自动打印服务器公网访问地址（如 `http://你的IP:8080`），并提示防火墙放行方法。
+4. 🚀 **自动启动并输出外网访问网址**：部署完成后自动打印服务器公网访问地址（如 `http://你的IP:5080`），并提示防火墙放行方法。
 
 ---
 
@@ -26,7 +26,7 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/WonderMaker123/workjilu/
 ```bash
 git clone https://github.com/WonderMaker123/workjilu.git && cd workjilu && docker compose up -d --build
 ```
-- 默认端口：`80`（如需改端口，在目录里新建 `.env` 写入 `WEB_PORT=8080` 即可）
+- 默认端口：`5080`（访问 `http://localhost:5080`；如需改端口，在目录里新建 `.env` 写入 `WEB_PORT=8080` 即可）
 - 停止服务：`docker compose down`
 - 查看日志：`docker compose logs -f`
 
