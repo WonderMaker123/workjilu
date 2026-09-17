@@ -113,25 +113,47 @@ echo -e "  • 访问端口: ${GREEN}${TARGET_PORT}${NC}"
 echo -e "${BLUE}----------------------------------------------------------------${NC}"
 echo ""
 
-# 3. 基础依赖检查
+# 3. 基础依赖检查 (已有则秒级跳过)
 echo -e "${BLUE}[1/4] 检查系统基础依赖 (curl, git, openssl)...${NC}"
-$SUDO apt-get update -y
-$SUDO apt-get install -y curl git ca-certificates openssl
+MISSING_PKGS=()
+for cmd in curl git openssl; do
+    if ! command -v "$cmd" &> /dev/null; then
+        MISSING_PKGS+=("$cmd")
+    fi
+done
 
-# 4. 检查并安装 Docker & Docker Compose
+if [ ${#MISSING_PKGS[@]} -eq 0 ]; then
+    echo -e "${GREEN}基础系统工具 (curl, git, openssl) 已具备，直接跳过安装。${NC}"
+else
+    echo -e "${YELLOW}检测到缺少基础工具: ${MISSING_PKGS[*]}，正在补充安装...${NC}"
+    $SUDO apt-get update -y
+    $SUDO apt-get install -y "${MISSING_PKGS[@]}" ca-certificates
+fi
+
+# 4. 检查并安装 Docker & Docker Compose (已有则秒级跳过)
 echo -e "${BLUE}[2/4] 检查 Docker 与 Compose 环境...${NC}"
-if ! command -v docker &> /dev/null; then
+if command -v docker &> /dev/null; then
+    DOCKER_VER=$(docker --version | awk '{print $3}' | tr -d ',')
+    echo -e "${GREEN}Docker 已安装 (版本: ${DOCKER_VER})，跳过安装。${NC}"
+    # 确保 Docker 服务处于运行状态
+    if ! $SUDO systemctl is-active --quiet docker; then
+        echo -e "${YELLOW}正在启动 Docker 守护进程...${NC}"
+        $SUDO systemctl start docker
+    fi
+else
     echo -e "${YELLOW}未检测到 Docker，正在全自动安装 Docker 环境，请稍候...${NC}"
     curl -fsSL https://get.docker.com | $SUDO sh
     $SUDO systemctl enable docker
     $SUDO systemctl start docker
-else
-    echo -e "${GREEN}Docker 环境就绪。${NC}"
 fi
 
-# 确保 docker-compose-plugin 就绪
-if ! docker compose version &> /dev/null; then
+# 确保 docker compose 可用
+if docker compose version &> /dev/null; then
+    COMPOSE_VER=$(docker compose version --short 2>/dev/null || echo "已就绪")
+    echo -e "${GREEN}Docker Compose 已就绪 (版本: ${COMPOSE_VER})，跳过安装。${NC}"
+else
     echo -e "${YELLOW}正在补充安装 docker-compose-plugin...${NC}"
+    $SUDO apt-get update -y
     $SUDO apt-get install -y docker-compose-plugin || true
 fi
 
